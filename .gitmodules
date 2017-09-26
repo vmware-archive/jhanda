@@ -4,3 +4,9 @@
 [submodule "vendor/github.com/onsi/ginkgo"]
 	path = vendor/github.com/onsi/ginkgo
 	url = https://github.com/onsi/ginkgo
+[submodule "vendor/golang.org/x/net"]
+	path = vendor/golang.org/x/net
+	url = https://github.com/golang/net.git
+[submodule "vendor/gopkg.in/yaml.v2"]
+	path = vendor/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2
