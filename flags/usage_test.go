@@ -18,8 +18,8 @@ var _ = Describe("Usage", func() {
 		}{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(usage).To(Equal(strings.TrimSpace(`
--1, --first   bool    the first flag
--2, --second  bool    the second flag (default: true)
+--first, -1   bool    the first flag
+--second, -2  bool    the second flag (default: true)
 --third       string  the third flag
 `)))
 	})

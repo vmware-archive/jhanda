@@ -22,25 +22,25 @@ func Usage(receiver interface{}) (string, error) {
 	var usage []string
 	var length int
 	for _, field := range fields {
-		var shortLong string
-		short, ok := field.Tag.Lookup("short")
-		if ok {
-			shortLong = fmt.Sprintf("-%s", short)
-		}
-
+		var longShort string
 		long, ok := field.Tag.Lookup("long")
 		if ok {
-			if shortLong != "" {
-				shortLong += ", "
+			longShort += fmt.Sprintf("--%s", long)
+		}
+
+		short, ok := field.Tag.Lookup("short")
+		if ok {
+			if longShort != "" {
+				longShort += ", "
 			}
-			shortLong += fmt.Sprintf("--%s", long)
+			longShort += fmt.Sprintf("-%s", short)
 		}
 
-		if len(shortLong) > length {
-			length = len(shortLong)
+		if len(longShort) > length {
+			length = len(longShort)
 		}
 
-		usage = append(usage, shortLong)
+		usage = append(usage, longShort)
 	}
 
 	for i, line := range usage {
