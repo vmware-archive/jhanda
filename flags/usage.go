@@ -48,7 +48,12 @@ func Usage(receiver interface{}) (string, error) {
 	}
 
 	for i, field := range fields {
-		line := fmt.Sprintf("%s  %s", usage[i], field.Type.Kind())
+		kind := field.Type.Kind().String()
+		if kind == reflect.Slice.String() {
+			kind = fmt.Sprintf("%s (variadic)", field.Type.Elem().Kind().String())
+		}
+
+		line := fmt.Sprintf("%s  %s", usage[i], kind)
 
 		if len(line) > length {
 			length = len(line)
