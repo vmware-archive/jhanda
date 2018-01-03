@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/pivotal-cf/jhanda"
+	"github.com/pivotal-cf/jhanda/internal/parser"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -65,41 +66,41 @@ var _ = Describe("Parse", func() {
 	Context("slice flags", func() {
 		It("parses short name flags", func() {
 			var set struct {
-				First  jhanda.StringSlice `short:"1"`
-				Second jhanda.StringSlice `short:"2"`
+				First  parser.StringSlice `short:"1"`
+				Second parser.StringSlice `short:"2"`
 			}
 			args, err := jhanda.Parse(&set, []string{"-1", "test", "-1", "another-test", "command"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(args).To(Equal([]string{"command"}))
 
-			Expect(set.First).To(ConsistOf(jhanda.StringSlice{"test", "another-test"}))
+			Expect(set.First).To(ConsistOf(parser.StringSlice{"test", "another-test"}))
 			Expect(set.Second).To(BeEmpty())
 		})
 
 		It("parses long name flags", func() {
 			var set struct {
-				First  jhanda.StringSlice `long:"first"`
-				Second jhanda.StringSlice `long:"second"`
+				First  parser.StringSlice `long:"first"`
+				Second parser.StringSlice `long:"second"`
 			}
 			args, err := jhanda.Parse(&set, []string{"--second", "test", "--second", "different-test", "command"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(args).To(Equal([]string{"command"}))
 
 			Expect(set.First).To(BeEmpty())
-			Expect(set.Second).To(ConsistOf(jhanda.StringSlice{"test", "different-test"}))
+			Expect(set.Second).To(ConsistOf(parser.StringSlice{"test", "different-test"}))
 		})
 
 		It("allows for setting a default value", func() {
 			var set struct {
-				First  jhanda.StringSlice `long:"first" default:"yes,no"`
-				Second jhanda.StringSlice `long:"second"`
+				First  parser.StringSlice `long:"first" default:"yes,no"`
+				Second parser.StringSlice `long:"second"`
 			}
 			args, err := jhanda.Parse(&set, []string{"--second", "what", "command"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(args).To(Equal([]string{"command"}))
 
-			Expect(set.First).To(ConsistOf(jhanda.StringSlice{"yes", "no"}))
-			Expect(set.Second).To(ConsistOf(jhanda.StringSlice{"what"}))
+			Expect(set.First).To(ConsistOf(parser.StringSlice{"yes", "no"}))
+			Expect(set.Second).To(ConsistOf(parser.StringSlice{"what"}))
 		})
 	})
 
