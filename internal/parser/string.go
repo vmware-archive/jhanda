@@ -6,9 +6,9 @@ import (
 )
 
 type String struct {
-	Set *flag.FlagSet
+	Set   *flag.FlagSet
 	Field reflect.Value
-	Tags reflect.StructTag
+	Tags  reflect.StructTag
 }
 
 func (s String) Execute() error {
@@ -27,6 +27,6 @@ func (s String) Execute() error {
 	if ok {
 		s.Set.StringVar(s.Field.Addr().Interface().(*string), long, defaultValue, "")
 	}
-	
+
 	return nil
 }

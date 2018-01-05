@@ -14,7 +14,7 @@ type Slice struct {
 }
 
 func (s Slice) Execute() error {
-	collection := s.Field.Addr().Interface().(*StringSlice)
+	collection := s.Field.Addr().Interface().(*[]string)
 
 	defaultSlice, ok := s.Tags.Lookup("default")
 	if ok {
@@ -22,26 +22,30 @@ func (s Slice) Execute() error {
 		*collection = append(*collection, separated...)
 	}
 
+	slice := StringSlice{collection}
+
 	short, ok := s.Tags.Lookup("short")
 	if ok {
-		s.Set.Var(collection, short, "")
+		s.Set.Var(&slice, short, "")
 	}
 
 	long, ok := s.Tags.Lookup("long")
 	if ok {
-		s.Set.Var(collection, long, "")
+		s.Set.Var(&slice, long, "")
 	}
 
 	return nil
 }
 
-type StringSlice []string
+type StringSlice struct {
+	slice *[]string
+}
 
 func (ss *StringSlice) String() string {
-	return fmt.Sprintf("%s", *ss)
+	return fmt.Sprintf("%s", ss.slice)
 }
 
 func (ss *StringSlice) Set(item string) error {
-	*ss = append(*ss, item)
+	*ss.slice = append(*ss.slice, item)
 	return nil
 }
