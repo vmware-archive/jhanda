@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-type Slice struct{}
-
-func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (Slice, error) {
+func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	collection := field.Addr().Interface().(*[]string)
 
 	defaultSlice, ok := tags.Lookup("default")
@@ -20,17 +18,24 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (S
 
 	slice := StringSlice{collection}
 
+	var f Flag
 	short, ok := tags.Lookup("short")
 	if ok {
 		set.Var(&slice, short, "")
+		f.flags = append(f.flags, set.Lookup(short))
+		f.name = fmt.Sprintf("-%s", short)
 	}
 
 	long, ok := tags.Lookup("long")
 	if ok {
 		set.Var(&slice, long, "")
+		f.flags = append(f.flags, set.Lookup(long))
+		f.name = fmt.Sprintf("--%s", long)
 	}
 
-	return Slice{}, nil
+	_, f.required = tags.Lookup("required")
+
+	return &f, nil
 }
 
 type StringSlice struct {

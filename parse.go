@@ -27,37 +27,42 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 		return nil, fmt.Errorf("unexpected pointer to non-struct type %s", t.Kind())
 	}
 
+	var flags []*parser.Flag
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		var err error
+		var (
+			f   *parser.Flag
+			err error
+		)
 
 		switch {
 		case field.Type.Kind() == reflect.Bool:
-			_, err = parser.NewBool(set, v.Field(i), field.Tag)
+			f, err = parser.NewBool(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Float64:
-			_, err = parser.NewFloat64(set, v.Field(i), field.Tag)
+			f, err = parser.NewFloat64(set, v.Field(i), field.Tag)
 
 		case field.Type == reflect.TypeOf(time.Duration(0)):
-			_, err = parser.NewDuration(set, v.Field(i), field.Tag)
+			f, err = parser.NewDuration(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Int64:
-			_, err = parser.NewInt64(set, v.Field(i), field.Tag)
+			f, err = parser.NewInt64(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Int:
-			_, err = parser.NewInt(set, v.Field(i), field.Tag)
+			f, err = parser.NewInt(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.String:
-			_, err = parser.NewString(set, v.Field(i), field.Tag)
+			f, err = parser.NewString(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Uint64:
-			_, err = parser.NewUint64(set, v.Field(i), field.Tag)
+			f, err = parser.NewUint64(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Uint:
-			_, err = parser.NewUint(set, v.Field(i), field.Tag)
+			f, err = parser.NewUint(set, v.Field(i), field.Tag)
 
 		case field.Type.Kind() == reflect.Slice:
-			_, err = parser.NewSlice(set, v.Field(i), field.Tag)
+			f, err = parser.NewSlice(set, v.Field(i), field.Tag)
 
 		default:
 			return nil, fmt.Errorf("unexpected flag receiver field type %s", field.Type.Kind())
@@ -65,11 +70,25 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		flags = append(flags, f)
 	}
 
 	err := set.Parse(args)
 	if err != nil {
 		return nil, err
+	}
+
+	set.Visit(func(ef *flag.Flag) {
+		for _, ff := range flags {
+			ff.SetIfMatched(ef)
+		}
+	})
+
+	for _, ff := range flags {
+		if err := ff.Validate(); err != nil {
+			return nil, err
+		}
 	}
 
 	return set.Args(), nil
