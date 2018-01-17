@@ -5,28 +5,24 @@ import (
 	"reflect"
 )
 
-type String struct {
-	Set   *flag.FlagSet
-	Field reflect.Value
-	Tags  reflect.StructTag
-}
+type String struct{}
 
-func (s String) Execute() error {
+func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (String, error) {
 	var defaultValue string
-	defaultStr, ok := s.Tags.Lookup("default")
+	defaultStr, ok := tags.Lookup("default")
 	if ok {
 		defaultValue = defaultStr
 	}
 
-	short, ok := s.Tags.Lookup("short")
+	short, ok := tags.Lookup("short")
 	if ok {
-		s.Set.StringVar(s.Field.Addr().Interface().(*string), short, defaultValue, "")
+		set.StringVar(field.Addr().Interface().(*string), short, defaultValue, "")
 	}
 
-	long, ok := s.Tags.Lookup("long")
+	long, ok := tags.Lookup("long")
 	if ok {
-		s.Set.StringVar(s.Field.Addr().Interface().(*string), long, defaultValue, "")
+		set.StringVar(field.Addr().Interface().(*string), long, defaultValue, "")
 	}
 
-	return nil
+	return String{}, nil
 }
