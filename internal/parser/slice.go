@@ -3,6 +3,7 @@ package parser
 import (
 	"flag"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -31,6 +32,15 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 		set.Var(&slice, long, "")
 		f.flags = append(f.flags, set.Lookup(long))
 		f.name = fmt.Sprintf("--%s", long)
+	}
+
+	env, ok := tags.Lookup("env")
+	if ok {
+		envStr := os.Getenv(env)
+		if envStr != "" {
+			separated := strings.Split(envStr, ",")
+			*collection = append(*collection, separated...)
+		}
 	}
 
 	_, f.required = tags.Lookup("required")
