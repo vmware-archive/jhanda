@@ -236,6 +236,22 @@ var _ = Describe("Parse", func() {
 					Expect(set.First).To(BeEmpty())
 					Expect(set.Second).To(ConsistOf([]string{"test", "different-test"}))
 				})
+
+				It("allows it to be empty set via environment variable", func() {
+					var set struct {
+						First  []string `long:"first"`
+						Second []string `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(BeEmpty())
+					Expect(set.Second).To(ConsistOf(BeEmpty()))
+				})
 			})
 		})
 
@@ -933,6 +949,22 @@ var _ = Describe("Parse", func() {
 
 					Expect(set.First).To(Equal(""))
 					Expect(set.Second).To(Equal("something"))
+				})
+
+				It("allows it to be empty set via environment variable", func() {
+					var set struct {
+						First  string `long:"first"`
+						Second string `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(""))
+					Expect(set.Second).To(Equal(""))
 				})
 			})
 		})

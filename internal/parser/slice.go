@@ -36,8 +36,8 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr := os.Getenv(env)
-		if envStr != "" {
+		envStr, ok := os.LookupEnv(env)
+		if ok {
 			separated := strings.Split(envStr, ",")
 			*collection = append(*collection, separated...)
 			f.set = true
