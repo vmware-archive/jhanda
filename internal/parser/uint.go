@@ -44,6 +44,7 @@ func NewUint(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 			}
 
 			field.SetUint(envValue)
+			f.set = true
 		}
 	}
 

@@ -44,6 +44,7 @@ func NewInt64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 			}
 
 			field.SetInt(envValue)
+			f.set = true
 		}
 	}
 

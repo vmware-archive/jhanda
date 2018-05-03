@@ -44,6 +44,7 @@ func NewBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 			}
 
 			field.SetBool(envValue)
+			f.set = true
 		}
 	}
 

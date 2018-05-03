@@ -34,6 +34,7 @@ func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (
 		envStr := os.Getenv(env)
 		if envStr != "" {
 			field.SetString(envStr)
+			f.set = true
 		}
 	}
 

@@ -78,6 +78,24 @@ var _ = Describe("Parse", func() {
 				})
 			})
 
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  bool `long:"first" env:"FIRST"`
+						Second bool `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "true")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(BeFalse())
+					Expect(set.Second).To(BeTrue())
+				})
+			})
+
 			Context("when the environment variable is not a parsable boolean", func() {
 				It("returns an error", func() {
 					var set struct {
@@ -201,6 +219,24 @@ var _ = Describe("Parse", func() {
 					Expect(set.Second).To(ConsistOf([]string{"test", "different-test"}))
 				})
 			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  []string `long:"first"`
+						Second []string `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "test,different-test")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(BeEmpty())
+					Expect(set.Second).To(ConsistOf([]string{"test", "different-test"}))
+				})
+			})
 		})
 
 		It("allows for setting a default value", func() {
@@ -311,6 +347,24 @@ var _ = Describe("Parse", func() {
 
 					Expect(set.First).To(Equal(0.0))
 					Expect(set.Second).To(Equal(567.8))
+				})
+			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  float64 `long:"first"`
+						Second float64 `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "123.4")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(0.0))
+					Expect(set.Second).To(Equal(123.4))
 				})
 			})
 
@@ -438,6 +492,24 @@ var _ = Describe("Parse", func() {
 				})
 			})
 
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  int64 `long:"first"`
+						Second int64 `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "123")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(int64(0)))
+					Expect(set.Second).To(Equal(int64(123)))
+				})
+			})
+
 			Context("when the environment variable is set to a non-int64 value", func() {
 				It("returns an error", func() {
 					var set struct {
@@ -559,6 +631,24 @@ var _ = Describe("Parse", func() {
 
 					Expect(set.First).To(Equal(time.Duration(0)))
 					Expect(set.Second).To(Equal(21 * time.Minute))
+				})
+			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  time.Duration `long:"first"`
+						Second time.Duration `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "42h")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(time.Duration(0)))
+					Expect(set.Second).To(Equal(42 * time.Hour))
 				})
 			})
 
@@ -686,6 +776,24 @@ var _ = Describe("Parse", func() {
 				})
 			})
 
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  int `long:"first"`
+						Second int `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "42")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(0))
+					Expect(set.Second).To(Equal(42))
+				})
+			})
+
 			Context("when the environment variable is set to a non-int value", func() {
 				It("returns an error", func() {
 					var set struct {
@@ -809,6 +917,24 @@ var _ = Describe("Parse", func() {
 					Expect(set.Second).To(Equal("other-thing"))
 				})
 			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  string `long:"first"`
+						Second string `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "something")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(""))
+					Expect(set.Second).To(Equal("something"))
+				})
+			})
 		})
 
 		Context("when a required flag is missing", func() {
@@ -906,6 +1032,24 @@ var _ = Describe("Parse", func() {
 
 					Expect(set.First).To(Equal(uint64(0)))
 					Expect(set.Second).To(Equal(uint64(21)))
+				})
+			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  uint64 `long:"first"`
+						Second uint64 `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "42")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(uint64(0)))
+					Expect(set.Second).To(Equal(uint64(42)))
 				})
 			})
 
@@ -1030,6 +1174,24 @@ var _ = Describe("Parse", func() {
 
 					Expect(set.First).To(Equal(uint(0)))
 					Expect(set.Second).To(Equal(uint(21)))
+				})
+			})
+
+			Context("when the field is required", func() {
+				It("allows it to be set via environment variable", func() {
+					var set struct {
+						First  uint `long:"first"`
+						Second uint `long:"second" env:"SECOND" required:"true"`
+					}
+
+					os.Setenv("SECOND", "42")
+
+					args, err := jhanda.Parse(&set, []string{"command"})
+					Expect(err).NotTo(HaveOccurred())
+					Expect(args).To(Equal([]string{"command"}))
+
+					Expect(set.First).To(Equal(uint(0)))
+					Expect(set.Second).To(Equal(uint(42)))
 				})
 			})
 

@@ -40,6 +40,7 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 		if envStr != "" {
 			separated := strings.Split(envStr, ",")
 			*collection = append(*collection, separated...)
+			f.set = true
 		}
 	}
 

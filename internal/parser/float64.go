@@ -44,6 +44,7 @@ func NewFloat64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) 
 			}
 
 			field.SetFloat(envValue)
+			f.set = true
 		}
 	}
 

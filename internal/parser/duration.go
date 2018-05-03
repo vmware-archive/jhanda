@@ -44,6 +44,7 @@ func NewDuration(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag)
 			}
 
 			field.SetInt(int64(envValue))
+			f.set = true
 		}
 	}
 
