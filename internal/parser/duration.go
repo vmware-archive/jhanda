@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -36,15 +37,20 @@ func NewDuration(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag)
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr := os.Getenv(env)
-		if envStr != "" {
-			envValue, err := time.ParseDuration(envStr)
-			if err != nil {
-				return &Flag{}, fmt.Errorf("could not parse duration environment variable %s value %q: %s", env, envStr, err)
-			}
+		envOpts := strings.Split(env, ",")
 
-			field.SetInt(int64(envValue))
-			f.set = true
+		for _, envOpt := range envOpts {
+			envStr := os.Getenv(envOpt)
+			if envStr != "" {
+				envValue, err := time.ParseDuration(envStr)
+				if err != nil {
+					return &Flag{}, fmt.Errorf("could not parse duration environment variable %s value %q: %s", envOpt, envStr, err)
+				}
+
+				field.SetInt(int64(envValue))
+				f.set = true
+				break
+			}
 		}
 	}
 

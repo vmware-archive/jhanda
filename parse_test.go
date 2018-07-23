@@ -14,6 +14,9 @@ var _ = Describe("Parse", func() {
 	AfterEach(func() {
 		os.Unsetenv("FIRST")
 		os.Unsetenv("SECOND")
+
+		os.Unsetenv("ALT_SECOND")
+		os.Unsetenv("ALT_THIRD")
 	})
 
 	Context("boolean flags", func() {
@@ -60,6 +63,31 @@ var _ = Describe("Parse", func() {
 				Expect(set.Second).To(BeTrue())
 			})
 
+			It("supports multiple environment variables", func() {
+				var set struct {
+					First  bool          `long:"first" env:"FIRST,ALT_FIRST"`
+					Second time.Duration `long:"second" env:"SECOND,ALT_SECOND"`
+					Third  []string      `long:"third" env:"THIRD,ALT_THIRD"`
+				}
+
+				os.Setenv("FIRST", "true")
+				os.Setenv("ALT_FIRST", "false")
+				os.Setenv("ALT_SECOND", "9s")
+				os.Setenv("ALT_THIRD", "yes,no")
+
+				args, err := jhanda.Parse(&set, []string{"command"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(args).To(Equal([]string{"command"}))
+
+				Expect(set.First).To(BeTrue())
+
+				duration, err := time.ParseDuration("9s")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(set.Second).To(Equal(duration))
+
+				Expect(set.Third).To(ContainElement("no"))
+			})
+
 			Context("when the environment variable is overridden at the commandline", func() {
 				It("uses the commandline setting", func() {
 					var set struct {
@@ -100,7 +128,7 @@ var _ = Describe("Parse", func() {
 				It("returns an error", func() {
 					var set struct {
 						First  bool `long:"first" env:"FIRST"`
-						Second bool `long:"second" env:"SECOND"`
+						Second bool `long:"second" env:"SECOND,ALT_SECOND"`
 					}
 
 					os.Setenv("SECOND", "banana")

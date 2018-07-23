@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func NewFloat64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
@@ -36,15 +37,20 @@ func NewFloat64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) 
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr := os.Getenv(env)
-		if envStr != "" {
-			envValue, err := strconv.ParseFloat(envStr, 64)
-			if err != nil {
-				return &Flag{}, fmt.Errorf("could not parse float64 environment variable %s value %q: %s", env, envStr, err)
-			}
+		envOpts := strings.Split(env, ",")
 
-			field.SetFloat(envValue)
-			f.set = true
+		for _, envOpt := range envOpts {
+			envStr := os.Getenv(envOpt)
+			if envStr != "" {
+				envValue, err := strconv.ParseFloat(envStr, 64)
+				if err != nil {
+					return &Flag{}, fmt.Errorf("could not parse float64 environment variable %s value %q: %s", envOpt, envStr, err)
+				}
+
+				field.SetFloat(envValue)
+				f.set = true
+				break
+			}
 		}
 	}
 
