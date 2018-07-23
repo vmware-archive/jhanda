@@ -44,7 +44,7 @@ func NewUint(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 			if envStr != "" {
 				envValue, err := strconv.ParseUint(envStr, 0, 0)
 				if err != nil {
-					return &Flag{}, fmt.Errorf("could not parse uint environment variable %s value %q: %s", env, envStr, err)
+					return &Flag{}, fmt.Errorf("could not parse uint environment variable %s value %q: %s", envOpt, envStr, err)
 				}
 
 				field.SetUint(envValue)

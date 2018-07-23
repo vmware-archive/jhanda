@@ -128,7 +128,7 @@ var _ = Describe("Parse", func() {
 				It("returns an error", func() {
 					var set struct {
 						First  bool `long:"first" env:"FIRST"`
-						Second bool `long:"second" env:"SECOND"`
+						Second bool `long:"second" env:"SECOND,ALT_SECOND"`
 					}
 
 					os.Setenv("SECOND", "banana")

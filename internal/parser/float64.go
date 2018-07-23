@@ -44,7 +44,7 @@ func NewFloat64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) 
 			if envStr != "" {
 				envValue, err := strconv.ParseFloat(envStr, 64)
 				if err != nil {
-					return &Flag{}, fmt.Errorf("could not parse float64 environment variable %s value %q: %s", env, envStr, err)
+					return &Flag{}, fmt.Errorf("could not parse float64 environment variable %s value %q: %s", envOpt, envStr, err)
 				}
 
 				field.SetFloat(envValue)

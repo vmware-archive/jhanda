@@ -44,7 +44,7 @@ func NewDuration(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag)
 			if envStr != "" {
 				envValue, err := time.ParseDuration(envStr)
 				if err != nil {
-					return &Flag{}, fmt.Errorf("could not parse duration environment variable %s value %q: %s", env, envStr, err)
+					return &Flag{}, fmt.Errorf("could not parse duration environment variable %s value %q: %s", envOpt, envStr, err)
 				}
 
 				field.SetInt(int64(envValue))

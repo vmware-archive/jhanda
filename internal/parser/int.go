@@ -44,7 +44,7 @@ func NewInt(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Fl
 			if envStr != "" {
 				envValue, err := strconv.ParseInt(envStr, 0, 0)
 				if err != nil {
-					return &Flag{}, fmt.Errorf("could not parse int environment variable %s value %q: %s", env, envStr, err)
+					return &Flag{}, fmt.Errorf("could not parse int environment variable %s value %q: %s", envOpt, envStr, err)
 				}
 
 				field.SetInt(envValue)
