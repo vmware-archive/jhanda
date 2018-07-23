@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func NewBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
@@ -36,15 +37,19 @@ func NewBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr := os.Getenv(env)
-		if envStr != "" {
-			envValue, err := strconv.ParseBool(envStr)
-			if err != nil {
-				return &Flag{}, fmt.Errorf("could not parse bool environment variable %s value %q: %s", env, envStr, err)
-			}
+		envSplit := strings.Split(env, ",")
+		for _, envI := range envSplit {
+			envStr := os.Getenv(envI)
+			if envStr != "" {
+				envValue, err := strconv.ParseBool(envStr)
+				if err != nil {
+					return &Flag{}, fmt.Errorf("could not parse bool environment variable %s value %q: %s", envI, envStr, err)
+				}
 
-			field.SetBool(envValue)
-			f.set = true
+				field.SetBool(envValue)
+				f.set = true
+				break
+			}
 		}
 	}
 

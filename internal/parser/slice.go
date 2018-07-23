@@ -36,11 +36,14 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr, ok := os.LookupEnv(env)
-		if ok {
-			separated := strings.Split(envStr, ",")
-			*collection = append(*collection, separated...)
-			f.set = true
+		for _, envI := range strings.Split(env, ",") {
+			envStr, ok := os.LookupEnv(envI)
+			if ok {
+				separated := strings.Split(envStr, ",")
+				*collection = append(*collection, separated...)
+				f.set = true
+				break
+			}
 		}
 	}
 

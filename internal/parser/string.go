@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 )
 
 func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
@@ -31,10 +32,13 @@ func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (
 
 	env, ok := tags.Lookup("env")
 	if ok {
-		envStr, ok := os.LookupEnv(env)
-		if ok {
-			field.SetString(envStr)
-			f.set = true
+		for _, envI := range strings.Split(env, ",") {
+			envStr, ok := os.LookupEnv(envI)
+			if ok {
+				field.SetString(envStr)
+				f.set = true
+				break
+			}
 		}
 	}
 

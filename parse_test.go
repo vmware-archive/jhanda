@@ -14,6 +14,16 @@ var _ = Describe("Parse", func() {
 	AfterEach(func() {
 		os.Unsetenv("FIRST")
 		os.Unsetenv("SECOND")
+
+		os.Unsetenv("ALT_FIRST")
+		os.Unsetenv("ALT_TIME")
+		os.Unsetenv("ALT_SLICE")
+		os.Unsetenv("ALT_FLOAT")
+		os.Unsetenv("ALT_INT")
+		os.Unsetenv("ALT_INT64")
+		os.Unsetenv("ALT_UINT64")
+		os.Unsetenv("ALT_UINT")
+		os.Unsetenv("ALT_STRING")
 	})
 
 	Context("boolean flags", func() {
@@ -60,6 +70,105 @@ var _ = Describe("Parse", func() {
 				Expect(set.Second).To(BeTrue())
 			})
 
+			Context("when the env tag has multiple variables", func() {
+				var set struct {
+					First   bool          `env:"FIRST,ALT_FIRST"`
+					Second  time.Duration `env:"TIME,ALT_TIME"`
+					Third   []string      `env:"SLICE,ALT_SLICE"`
+					Fourth  float64       `env:"FLOAT,ALT_FLOAT"`
+					Fifth   int           `env:"INT,ALT_INT"`
+					Sixth   int64         `env:"INT64,ALT_INT64"`
+					Seventh uint64        `env:"UINT64,ALT_UINT64"`
+					Eigth   uint          `env:"UNIT,ALT_UINT"`
+					Ninth   string        `env:"STRING,ALT_STRING"`
+				}
+
+				It("parses boolean flags with the first env var present taking priority", func() {
+					os.Setenv("FIRST", "true")
+					os.Setenv("ALT_FIRST", "false")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.First).To(BeTrue())
+				})
+
+				It("parses time.Duration flags", func() {
+					os.Setenv("ALT_TIME", "9s")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					duration, err := time.ParseDuration("9s")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(set.Second).To(Equal(duration))
+				})
+
+				It("parses slice flags", func() {
+					os.Setenv("ALT_SLICE", "dog,cat")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Third[0]).To(Equal("dog"))
+					Expect(set.Third[1]).To(Equal("cat"))
+				})
+
+				It("parses float64 flags", func() {
+					os.Setenv("ALT_FLOAT", "0.1")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Fourth).To(Equal(0.1))
+				})
+
+				It("parses int flags", func() {
+					os.Setenv("ALT_INT", "1")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Fifth).To(Equal(1))
+				})
+
+				It("parses int64 flags", func() {
+					os.Setenv("ALT_INT64", "1")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Sixth).To(Equal(int64(1)))
+				})
+
+				It("parses uint64 flags", func() {
+					os.Setenv("ALT_UINT64", "1")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Seventh).To(Equal(uint64(1)))
+				})
+
+				It("parses uint flags", func() {
+					os.Setenv("ALT_UINT", "1")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Eigth).To(Equal(uint(1)))
+				})
+
+				It("parses string flags", func() {
+					os.Setenv("ALT_STRING", "mouse")
+
+					_, err := jhanda.Parse(&set, []string{})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(set.Ninth).To(Equal("mouse"))
+				})
+			})
+
 			Context("when the environment variable is overridden at the commandline", func() {
 				It("uses the commandline setting", func() {
 					var set struct {
@@ -100,7 +209,7 @@ var _ = Describe("Parse", func() {
 				It("returns an error", func() {
 					var set struct {
 						First  bool `long:"first" env:"FIRST"`
-						Second bool `long:"second" env:"SECOND"`
+						Second bool `long:"second" env:"SECOND,ALT_SECOND"`
 					}
 
 					os.Setenv("SECOND", "banana")
