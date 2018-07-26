@@ -98,6 +98,16 @@ func PrintUsage(receiver interface{}) (string, error) {
 	for i, field := range fields {
 		description, ok := field.Tag.Lookup("description")
 		if ok {
+			_, deprecated := field.Tag.Lookup("deprecated")
+			if deprecated {
+				description = fmt.Sprintf("**DEPRECATED** %s", description)
+			}
+
+			_, experimental := field.Tag.Lookup("experimental")
+			if experimental {
+				description = fmt.Sprintf("**EXPERIMENTAL** %s", description)
+			}
+
 			usage[i] = fmt.Sprintf("%s  %s", usage[i], description)
 		}
 	}
