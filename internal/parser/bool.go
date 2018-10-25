@@ -35,6 +35,13 @@ func NewBool(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*F
 		f.name = fmt.Sprintf("--%s", long)
 	}
 
+	alias, ok := tags.Lookup("alias")
+	if ok {
+		set.BoolVar(field.Addr().Interface().(*bool), alias, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(alias))
+		f.name = fmt.Sprintf("--%s", alias)
+	}
+
 	env, ok := tags.Lookup("env")
 	if ok {
 		envOpts := strings.Split(env, ",")

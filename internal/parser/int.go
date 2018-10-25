@@ -35,6 +35,13 @@ func NewInt(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Fl
 		f.name = fmt.Sprintf("--%s", long)
 	}
 
+	alias, ok := tags.Lookup("alias")
+	if ok {
+		set.IntVar(field.Addr().Interface().(*int), alias, int(defaultValue), "")
+		f.flags = append(f.flags, set.Lookup(alias))
+		f.name = fmt.Sprintf("--%s", alias)
+	}
+
 	env, ok := tags.Lookup("env")
 	if ok {
 		envOpts := strings.Split(env, ",")

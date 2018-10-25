@@ -35,6 +35,13 @@ func NewFloat64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) 
 		f.name = fmt.Sprintf("--%s", long)
 	}
 
+	alias, ok := tags.Lookup("alias")
+	if ok {
+		set.Float64Var(field.Addr().Interface().(*float64), alias, defaultValue, "")
+		f.flags = append(f.flags, set.Lookup(alias))
+		f.name = fmt.Sprintf("--%s", alias)
+	}
+
 	env, ok := tags.Lookup("env")
 	if ok {
 		envOpts := strings.Split(env, ",")

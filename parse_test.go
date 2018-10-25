@@ -46,6 +46,19 @@ var _ = Describe("Parse", func() {
 			Expect(set.Second).To(BeTrue())
 		})
 
+		It("parses aliased flags", func() {
+			var set struct {
+				First  bool `long:"first" alias:"uno"`
+				Second bool `long:"second" alias:"dos"`
+			}
+			args, err := jhanda.Parse(&set, []string{"--uno", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(BeTrue())
+			Expect(set.Second).To(BeFalse())
+		})
+
 		Context("when using environment variables", func() {
 			It("supports environment variables", func() {
 				var set struct {
@@ -211,6 +224,19 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(BeEmpty())
 			Expect(set.Second).To(ConsistOf([]string{"test", "different-test"}))
+		})
+
+		It("parses aliased flags", func() {
+			var set struct {
+				First  []string `long:"first" alias:"uno"`
+				Second []string `long:"second" alias:"dos"`
+			}
+			args, err := jhanda.Parse(&set, []string{"--uno", "test", "--uno", "different-test", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(ConsistOf([]string{"test", "different-test"}))
+			Expect(set.Second).To(BeEmpty())
 		})
 
 		Context("when using environment variables", func() {
@@ -912,6 +938,19 @@ var _ = Describe("Parse", func() {
 
 			Expect(set.First).To(Equal(""))
 			Expect(set.Second).To(Equal("goodbye"))
+		})
+
+		It("parses aliased flags", func() {
+			var set struct {
+				First  string `long:"first" alias:"uno"`
+				Second string `long:"second" alias:"dos"`
+			}
+			args, err := jhanda.Parse(&set, []string{"--uno", "one", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(Equal("one"))
+			Expect(set.Second).To(BeEmpty())
 		})
 
 		It("allows for setting a default value", func() {
