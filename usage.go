@@ -39,6 +39,14 @@ func PrintUsage(receiver interface{}) (string, error) {
 			longShortEnv += fmt.Sprintf("--%s", long)
 		}
 
+		alias, ok := field.Tag.Lookup("alias")
+		if ok {
+			if longShortEnv != "" {
+				longShortEnv += ", "
+			}
+			longShortEnv += fmt.Sprintf("--%s", alias)
+		}
+
 		short, ok := field.Tag.Lookup("short")
 		if ok {
 			if longShortEnv != "" {
