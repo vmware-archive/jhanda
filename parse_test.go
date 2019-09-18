@@ -59,6 +59,19 @@ var _ = Describe("Parse", func() {
 			Expect(set.Second).To(BeFalse())
 		})
 
+		It("parses multiple aliased flags", func() {
+			var set struct {
+				First  bool `long:"first" alias:"uno,one"`
+				Second bool `long:"second" alias:"dos"`
+			}
+			args, err := jhanda.Parse(&set, []string{"--one", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(BeTrue())
+			Expect(set.Second).To(BeFalse())
+		})
+
 		Context("when using environment variables", func() {
 			It("supports environment variables", func() {
 				var set struct {

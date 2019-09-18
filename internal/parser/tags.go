@@ -55,9 +55,12 @@ func (t parsedTags) setLong(fn func(string)) {
 func (t parsedTags) setAlias(fn func(string)) {
 	alias, exists := t.tags.Lookup("alias")
 	if exists {
-		fn(alias)
-		t.flag.flags = append(t.flag.flags, t.set.Lookup(alias))
-		t.flag.name = fmt.Sprintf("--%s", alias)
+		aliases := strings.Split(alias, ",")
+		for _, a := range aliases {
+			fn(a)
+			t.flag.flags = append(t.flag.flags, t.set.Lookup(a))
+			t.flag.name = fmt.Sprintf("--%s", a)
+		}
 	}
 }
 
