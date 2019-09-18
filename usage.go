@@ -49,9 +49,11 @@ func PrintUsage(receiver interface{}) (string, error) {
 			fields = append(fields, fmt.Sprintf("-%s", short))
 		}
 
-		env, ok := field.Tag.Lookup("env")
+		envs, ok := field.Tag.Lookup("env")
 		if ok {
-			fields = append(fields, fmt.Sprintf("%s", env))
+			for _, env := range strings.Split(envs, ",") {
+				fields = append(fields, fmt.Sprintf("%s", env))
+			}
 		}
 
 		field := strings.Join(fields, ", ")
