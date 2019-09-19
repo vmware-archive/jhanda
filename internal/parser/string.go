@@ -2,7 +2,6 @@ package parser
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -10,33 +9,30 @@ import (
 
 func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	var defaultValue string
-	defaultStr, ok := tags.Lookup("default")
-	if ok {
+	parsedTags := newParseTags(tags, set)
+
+	err := parsedTags.setDefault(func(defaultStr string) error {
 		defaultValue = defaultStr
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	var f Flag
-	short, ok := tags.Lookup("short")
-	if ok {
+	parsedTags.setShort(func(short string) {
 		set.StringVar(field.Addr().Interface().(*string), short, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(short))
-		f.name = fmt.Sprintf("-%s", short)
-	}
+	})
 
-	long, ok := tags.Lookup("long")
-	if ok {
-		set.StringVar(field.Addr().Interface().(*string), long, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(long))
-		f.name = fmt.Sprintf("--%s", long)
-	}
-
-	alias, ok := tags.Lookup("alias")
-	if ok {
+	parsedTags.setAlias(func(alias string) {
 		set.StringVar(field.Addr().Interface().(*string), alias, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(alias))
-		f.name = fmt.Sprintf("--%s", alias)
-	}
+	})
 
+	parsedTags.setLong(func(long string) {
+		set.StringVar(field.Addr().Interface().(*string), long, defaultValue, "")
+	})
+
+	f := parsedTags.getFlag()
 	env, ok := tags.Lookup("env")
 	if ok {
 		envOpts := strings.Split(env, ",")
@@ -51,7 +47,5 @@ func NewString(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (
 		}
 	}
 
-	_, f.required = tags.Lookup("required")
-
-	return &f, nil
+	return f, nil
 }

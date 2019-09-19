@@ -955,10 +955,10 @@ var _ = Describe("Parse", func() {
 
 		It("parses aliased flags", func() {
 			var set struct {
-				First  string `long:"first" alias:"uno"`
+				First  string `long:"first" alias:"uno,one"`
 				Second string `long:"second" alias:"dos"`
 			}
-			args, err := jhanda.Parse(&set, []string{"--uno", "one", "command"})
+			args, err := jhanda.Parse(&set, []string{"--one", "one", "command"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(args).To(Equal([]string{"command"}))
 
