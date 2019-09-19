@@ -39,14 +39,16 @@ func PrintUsage(receiver interface{}) (string, error) {
 			fields = append(fields, fmt.Sprintf("--%s", long))
 		}
 
-		alias, ok := field.Tag.Lookup("alias")
-		if ok {
-			fields = append(fields, fmt.Sprintf("--%s", alias))
-		}
-
 		short, ok := field.Tag.Lookup("short")
 		if ok {
 			fields = append(fields, fmt.Sprintf("-%s", short))
+		}
+
+		aliases, ok := field.Tag.Lookup("alias")
+		if ok {
+			for _, alias := range strings.Split(aliases, ",") {
+				fields = append(fields, fmt.Sprintf("--%s", alias))
+			}
 		}
 
 		envs, ok := field.Tag.Lookup("env")
