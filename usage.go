@@ -33,32 +33,25 @@ func PrintUsage(receiver interface{}) (string, error) {
 	var usage []string
 	var length int
 	for _, field := range fields {
-		var fields []string
+		var arguments []string
 		long, ok := field.Tag.Lookup("long")
 		if ok {
-			fields = append(fields, fmt.Sprintf("--%s", long))
+			arguments = append(arguments, fmt.Sprintf("--%s", long))
 		}
 
 		short, ok := field.Tag.Lookup("short")
 		if ok {
-			fields = append(fields, fmt.Sprintf("-%s", short))
-		}
-
-		aliases, ok := field.Tag.Lookup("alias")
-		if ok {
-			for _, alias := range strings.Split(aliases, ",") {
-				fields = append(fields, fmt.Sprintf("--%s", alias))
-			}
+			arguments = append(arguments, fmt.Sprintf("-%s", short))
 		}
 
 		envs, ok := field.Tag.Lookup("env")
 		if ok {
 			for _, env := range strings.Split(envs, ",") {
-				fields = append(fields, fmt.Sprintf("%s", env))
+				arguments = append(arguments, fmt.Sprintf("%s", env))
 			}
 		}
 
-		field := strings.Join(fields, ", ")
+		field := strings.Join(arguments, ", ")
 
 		if len(field) > length {
 			length = len(field)
@@ -111,14 +104,25 @@ func PrintUsage(receiver interface{}) (string, error) {
 				description = fmt.Sprintf("**EXPERIMENTAL** %s", description)
 			}
 
-			usage[i] = fmt.Sprintf("%s  %s", usage[i], description)
+			usage[i] += fmt.Sprintf("  %s", description)
 		}
 	}
 
 	for i, field := range fields {
 		defaultValue, ok := field.Tag.Lookup("default")
 		if ok {
-			usage[i] = fmt.Sprintf("%s (default: %s)", usage[i], defaultValue)
+			usage[i] += fmt.Sprintf(" (default: %s)", defaultValue)
+		}
+	}
+
+	for i, field := range fields {
+		aliases, ok := field.Tag.Lookup("alias")
+		if ok {
+			var arguments []string
+			for _, alias := range strings.Split(aliases, ",") {
+				arguments = append(arguments, fmt.Sprintf("--%s", alias))
+			}
+			usage[i] += fmt.Sprintf("\n  (aliases: %s)", strings.Join(arguments, ", "))
 		}
 	}
 

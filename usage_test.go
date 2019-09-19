@@ -20,11 +20,12 @@ var _ = Describe("Usage", func() {
 		}{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(usage).To(Equal(strings.TrimSpace(`
---fifth                    bool                         **DEPRECATED** the fifth flag
---first, -1, --one, --uno  bool (required)              the first flag
---fourth                   string                       **EXPERIMENTAL** the fourth flag
---second, -2               string (required, variadic)  the second flag (default: true)
---third, THIRD, THREE      string                       the third flag
+--fifth                bool                         **DEPRECATED** the fifth flag
+--first, -1            bool (required)              the first flag
+  (aliases: --one, --uno)
+--fourth               string                       **EXPERIMENTAL** the fourth flag
+--second, -2           string (required, variadic)  the second flag (default: true)
+--third, THIRD, THREE  string                       the third flag
 `)))
 	})
 
