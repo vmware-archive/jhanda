@@ -3,65 +3,52 @@ package parser
 import (
 	"flag"
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 func NewInt64(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	var defaultValue int64
-	defaultStr, ok := tags.Lookup("default")
-	if ok {
+	parsedTags := newParseTags(tags, set)
+
+	err := parsedTags.setDefault(func(defaultStr string) error {
 		var err error
 		defaultValue, err = strconv.ParseInt(defaultStr, 0, 64)
 		if err != nil {
-			return &Flag{}, fmt.Errorf("could not parse int64 default value %q: %s", defaultStr, err)
+			return fmt.Errorf("could not parse int64 default value %q: %s", defaultStr, err)
 		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	var f Flag
-	short, ok := tags.Lookup("short")
-	if ok {
+	parsedTags.setShort(func(short string) {
 		set.Int64Var(field.Addr().Interface().(*int64), short, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(short))
-		f.name = fmt.Sprintf("-%s", short)
-	}
+	})
 
-	long, ok := tags.Lookup("long")
-	if ok {
-		set.Int64Var(field.Addr().Interface().(*int64), long, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(long))
-		f.name = fmt.Sprintf("--%s", long)
-	}
-
-	alias, ok := tags.Lookup("alias")
-	if ok {
+	parsedTags.setAlias(func(alias string) {
 		set.Int64Var(field.Addr().Interface().(*int64), alias, defaultValue, "")
-		f.flags = append(f.flags, set.Lookup(alias))
-		f.name = fmt.Sprintf("--%s", alias)
-	}
+	})
 
-	env, ok := tags.Lookup("env")
-	if ok {
-		envOpts := strings.Split(env, ",")
+	parsedTags.setLong(func(long string) {
+		set.Int64Var(field.Addr().Interface().(*int64), long, defaultValue, "")
+	})
 
-		for _, envOpt := range envOpts {
-			envStr := os.Getenv(envOpt)
-			if envStr != "" {
-				envValue, err := strconv.ParseInt(envStr, 0, 64)
-				if err != nil {
-					return &Flag{}, fmt.Errorf("could not parse int64 environment variable %s value %q: %s", envOpt, envStr, err)
-				}
-
-				field.SetInt(envValue)
-				f.set = true
-				break
-			}
+	err = parsedTags.setEnv(func(envOpt, envStr string) error {
+		envValue, err := strconv.ParseInt(envStr, 0, 64)
+		if err != nil {
+			return fmt.Errorf("could not parse int64 environment variable %s value %q: %s", envOpt, envStr, err)
 		}
+
+		field.SetInt(envValue)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	_, f.required = tags.Lookup("required")
-
-	return &f, nil
+	return parsedTags.getFlag(), nil
 }

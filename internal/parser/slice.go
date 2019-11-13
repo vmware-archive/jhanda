@@ -11,36 +11,29 @@ import (
 func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*Flag, error) {
 	collection := field.Addr().Interface().(*[]string)
 
-	defaultSlice, ok := tags.Lookup("default")
-	if ok {
-		separated := strings.Split(defaultSlice, ",")
+	parsedTags := newParseTags(tags, set)
+
+	_ = parsedTags.setDefault(func(defaultStr string) error {
+		separated := strings.Split(defaultStr, ",")
 		*collection = append(*collection, separated...)
-	}
+		return nil
+	})
 
 	slice := StringSlice{collection}
 
-	var f Flag
-	short, ok := tags.Lookup("short")
-	if ok {
+	parsedTags.setShort(func(short string) {
 		set.Var(&slice, short, "")
-		f.flags = append(f.flags, set.Lookup(short))
-		f.name = fmt.Sprintf("-%s", short)
-	}
+	})
 
-	long, ok := tags.Lookup("long")
-	if ok {
-		set.Var(&slice, long, "")
-		f.flags = append(f.flags, set.Lookup(long))
-		f.name = fmt.Sprintf("--%s", long)
-	}
-
-	alias, ok := tags.Lookup("alias")
-	if ok {
+	parsedTags.setAlias(func(alias string) {
 		set.Var(&slice, alias, "")
-		f.flags = append(f.flags, set.Lookup(alias))
-		f.name = fmt.Sprintf("--%s", alias)
-	}
+	})
 
+	parsedTags.setLong(func(long string) {
+		set.Var(&slice, long, "")
+	})
+
+	f := parsedTags.getFlag()
 	env, ok := tags.Lookup("env")
 	if ok {
 		envOpts := strings.Split(env, ",")
@@ -56,9 +49,7 @@ func NewSlice(set *flag.FlagSet, field reflect.Value, tags reflect.StructTag) (*
 		}
 	}
 
-	_, f.required = tags.Lookup("required")
-
-	return &f, nil
+	return f, nil
 }
 
 type StringSlice struct {

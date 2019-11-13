@@ -33,33 +33,31 @@ func PrintUsage(receiver interface{}) (string, error) {
 	var usage []string
 	var length int
 	for _, field := range fields {
-		var longShortEnv string
+		var arguments []string
 		long, ok := field.Tag.Lookup("long")
 		if ok {
-			longShortEnv += fmt.Sprintf("--%s", long)
+			arguments = append(arguments, fmt.Sprintf("--%s", long))
 		}
 
 		short, ok := field.Tag.Lookup("short")
 		if ok {
-			if longShortEnv != "" {
-				longShortEnv += ", "
-			}
-			longShortEnv += fmt.Sprintf("-%s", short)
+			arguments = append(arguments, fmt.Sprintf("-%s", short))
 		}
 
-		env, ok := field.Tag.Lookup("env")
+		envs, ok := field.Tag.Lookup("env")
 		if ok {
-			if longShortEnv != "" {
-				longShortEnv += ", "
+			for _, env := range strings.Split(envs, ",") {
+				arguments = append(arguments, fmt.Sprintf("%s", env))
 			}
-			longShortEnv += fmt.Sprintf("%s", env)
 		}
 
-		if len(longShortEnv) > length {
-			length = len(longShortEnv)
+		field := strings.Join(arguments, ", ")
+
+		if len(field) > length {
+			length = len(field)
 		}
 
-		usage = append(usage, longShortEnv)
+		usage = append(usage, field)
 	}
 
 	for i, line := range usage {
@@ -106,14 +104,25 @@ func PrintUsage(receiver interface{}) (string, error) {
 				description = fmt.Sprintf("**EXPERIMENTAL** %s", description)
 			}
 
-			usage[i] = fmt.Sprintf("%s  %s", usage[i], description)
+			usage[i] += fmt.Sprintf("  %s", description)
 		}
 	}
 
 	for i, field := range fields {
 		defaultValue, ok := field.Tag.Lookup("default")
 		if ok {
-			usage[i] = fmt.Sprintf("%s (default: %s)", usage[i], defaultValue)
+			usage[i] += fmt.Sprintf(" (default: %s)", defaultValue)
+		}
+	}
+
+	for i, field := range fields {
+		aliases, ok := field.Tag.Lookup("alias")
+		if ok {
+			var arguments []string
+			for _, alias := range strings.Split(aliases, ",") {
+				arguments = append(arguments, fmt.Sprintf("--%s", alias))
+			}
+			usage[i] += fmt.Sprintf("\n  (aliases: %s)", strings.Join(arguments, ", "))
 		}
 	}
 
