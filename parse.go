@@ -3,11 +3,10 @@ package jhanda
 import (
 	"flag"
 	"fmt"
+	"github.com/pivotal-cf/jhanda/internal/parser"
 	"io/ioutil"
 	"reflect"
 	"time"
-
-	"github.com/pivotal-cf/jhanda/internal/parser"
 )
 
 // Parse will populate the "receiver" object with the parsed values of the
@@ -32,6 +31,32 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 		return nil, fmt.Errorf("unexpected pointer to non-struct type %s", t.Kind())
 	}
 
+	flags, err := parseFields(t, set, v)
+	if err != nil {
+		return nil, err
+	}
+
+	err = set.Parse(args)
+	if err != nil {
+		return nil, err
+	}
+
+	set.Visit(func(ef *flag.Flag) {
+		for _, ff := range flags {
+			ff.SetIfMatched(ef)
+		}
+	})
+
+	for _, ff := range flags {
+		if err := ff.Validate(); err != nil {
+			return nil, err
+		}
+	}
+
+	return set.Args(), nil
+}
+
+func parseFields(t reflect.Type, set *flag.FlagSet, v reflect.Value) ([]*parser.Flag, error) {
 	var flags []*parser.Flag
 
 	for i := 0; i < t.NumField(); i++ {
@@ -69,6 +94,15 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 		case field.Type.Kind() == reflect.Slice:
 			f, err = parser.NewSlice(set, v.Field(i), field.Tag)
 
+		case field.Type.Kind() == reflect.Struct:
+			nestedFlags, err := parseFields(v.Field(i).Type(), set, v.Field(i))
+			if err != nil {
+				return nil, err
+			}
+
+			flags = append(flags, nestedFlags...)
+			continue
+
 		default:
 			return nil, fmt.Errorf("unexpected flag receiver field type %s", field.Type.Kind())
 		}
@@ -78,23 +112,5 @@ func Parse(receiver interface{}, args []string) ([]string, error) {
 
 		flags = append(flags, f)
 	}
-
-	err := set.Parse(args)
-	if err != nil {
-		return nil, err
-	}
-
-	set.Visit(func(ef *flag.Flag) {
-		for _, ff := range flags {
-			ff.SetIfMatched(ef)
-		}
-	})
-
-	for _, ff := range flags {
-		if err := ff.Validate(); err != nil {
-			return nil, err
-		}
-	}
-
-	return set.Args(), nil
+	return flags, nil
 }

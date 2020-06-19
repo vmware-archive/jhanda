@@ -19,6 +19,24 @@ var _ = Describe("Parse", func() {
 		os.Unsetenv("ALT_THIRD")
 	})
 
+	Context("embedded structs fields", func() {
+		It("parses the fields", func() {
+			type second struct {
+				Second bool `short:"2"`
+			}
+			var set struct {
+				First bool `short:"1"`
+				second
+			}
+			args, err := jhanda.Parse(&set, []string{"-1", "command"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(args).To(Equal([]string{"command"}))
+
+			Expect(set.First).To(BeTrue())
+			Expect(set.Second).To(BeFalse())
+		})
+	})
+
 	Context("boolean flags", func() {
 		It("parses short name flags", func() {
 			var set struct {
