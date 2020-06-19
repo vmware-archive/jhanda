@@ -28,12 +28,12 @@ var _ = Describe("Parse", func() {
 				First bool `short:"1"`
 				second
 			}
-			args, err := jhanda.Parse(&set, []string{"-1", "command"})
+			args, err := jhanda.Parse(&set, []string{"-2", "command"})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(args).To(Equal([]string{"command"}))
 
-			Expect(set.First).To(BeTrue())
-			Expect(set.Second).To(BeFalse())
+			Expect(set.First).To(BeFalse())
+			Expect(set.Second).To(BeTrue())
 		})
 	})
 
