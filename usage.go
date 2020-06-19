@@ -25,10 +25,7 @@ func PrintUsage(receiver interface{}) (string, error) {
 		return "", fmt.Errorf("unexpected pointer to non-struct type %s", t.Kind())
 	}
 
-	var fields []reflect.StructField
-	for i := 0; i < t.NumField(); i++ {
-		fields = append(fields, t.Field(i))
-	}
+	fields := getFields(t)
 
 	var usage []string
 	var length int
@@ -129,6 +126,21 @@ func PrintUsage(receiver interface{}) (string, error) {
 	sort.Strings(usage)
 
 	return strings.Join(usage, "\n"), nil
+}
+
+func getFields(t reflect.Type) []reflect.StructField {
+	var fields []reflect.StructField
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+
+		if field.Type.Kind() == reflect.Struct {
+			fields = append(fields, getFields(field.Type)...)
+			continue
+		}
+
+		fields = append(fields, field)
+	}
+	return fields
 }
 
 func pad(str, pad string, length int) string {

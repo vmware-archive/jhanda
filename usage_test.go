@@ -17,6 +17,9 @@ var _ = Describe("Usage", func() {
 			First  bool     `short:"1" long:"first"  required:"true"     alias:"one,uno"    description:"the first flag"`
 			Fourth string   `          long:"fourth" experimental:"true"                description:"the fourth flag"`
 			Fifth  bool     `          long:"fifth"  deprecated:"true"                  description:"the fifth flag"`
+			nested struct {
+				Sixth string `long:"sixth" description:"the sixth flag"`
+			}
 		}{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(usage).To(Equal(strings.TrimSpace(`
@@ -25,6 +28,7 @@ var _ = Describe("Usage", func() {
   (aliases: --one, --uno)
 --fourth               string                       **EXPERIMENTAL** the fourth flag
 --second, -2           string (required, variadic)  the second flag (default: true)
+--sixth                string                       the sixth flag
 --third, THIRD, THREE  string                       the third flag
 `)))
 	})
